@@ -85,6 +85,19 @@ def check_machine_detail(value):
         raise ValueError("entry must name the unfinished sentence")
 
 
+def check_detail_in_second_sentence(value):
+    # The detail must land in the second sentence, after the
+    # status: the first sentence states, the second shows. A
+    # detail buried in the status line would not read as a
+    # quiet fact that follows it.
+    sentences = [s.strip() for s in value.split(".") if s.strip()]
+    if len(sentences) < 2:
+        raise ValueError("entry must have a second sentence for the detail")
+    second = sentences[1].lower()
+    if "cursor" not in second or "blinking" not in second:
+        raise ValueError("the machine detail must sit in the second sentence")
+
+
 def check_no_announced_grief(value):
     # No announced grief, no plea for pity: none of these words
     # may appear; the sadness must stay in the detail.
@@ -188,6 +201,7 @@ def validate_detail(value):
     """Craft: the sadness sits in one small, exact machine detail,
     never announced as grief."""
     check_machine_detail(value)
+    check_detail_in_second_sentence(value)
     check_no_announced_grief(value)
 
 
