@@ -165,6 +165,17 @@ def check_terminal_period(value):
         raise ValueError("entry must end on a period")
 
 
+def check_second_sentence_longer(value):
+    # The turn must land after the status: the second sentence
+    # carries the quiet fact, so it must have more words than
+    # the two-word status that opens the line.
+    sentences = [s.strip() for s in value.split(".") if s.strip()]
+    if len(sentences) < 2:
+        raise ValueError("entry must have a second sentence to carry the fact")
+    if len(sentences[1].split()) <= len(sentences[0].split()):
+        raise ValueError("the second sentence must be longer than the status")
+
+
 def check_no_repeated_content_word(value):
     # Tight and plain: no content word repeats itself; a repeated
     # word would make the line feel looped instead of stated once.
@@ -176,6 +187,15 @@ def check_no_repeated_content_word(value):
         if word in seen:
             raise ValueError("entry must not repeat a content word: %s" % word)
         seen.add(word)
+
+
+def check_no_long_word(value):
+    # Plain status-update diction: no word longer than 12 letters,
+    # so nothing in the line reads as technical or showy.
+    words = [w.strip(".,;:!?") for w in value.split()]
+    for word in words:
+        if len(word) > 12:
+            raise ValueError("entry must not use a word over 12 letters: %s" % word)
 
 
 def validate_structure(value):
@@ -192,7 +212,9 @@ def validate_structure(value):
         check_two_sentences,
         check_word_budget,
         check_terminal_period,
+        check_second_sentence_longer,
         check_no_repeated_content_word,
+        check_no_long_word,
     ):
         check(value)
 
