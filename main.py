@@ -113,6 +113,16 @@ def check_agent_voice(value):
             raise ValueError("entry must not become human: %s" % word)
 
 
+def check_first_sentence_is_status(value):
+    # The line opens with the agent's own status, not a ramble:
+    # the first sentence must be short (1-3 words) and end on a
+    # period, so "Draft saved." lands before the quiet fact.
+    first = value.split(".")[0].strip()
+    words = first.split()
+    if not 1 <= len(words) <= 3:
+        raise ValueError("entry must open with a short status, got %d words" % len(words))
+
+
 def check_not_poem_or_slogan(value):
     # Plain and short, not a poem, a speech or a slogan: no
     # exclamation, no ellipsis, no em-dash flourish.
@@ -142,6 +152,19 @@ def check_terminal_period(value):
         raise ValueError("entry must end on a period")
 
 
+def check_no_repeated_content_word(value):
+    # Tight and plain: no content word repeats itself; a repeated
+    # word would make the line feel looped instead of stated once.
+    words = [w.strip(".,;:!?").lower() for w in value.split()]
+    seen = set()
+    for word in words:
+        if word in ("the", "and", "is", "a", "an", "of", "to"):
+            continue
+        if word in seen:
+            raise ValueError("entry must not repeat a content word: %s" % word)
+        seen.add(word)
+
+
 def validate_structure(value):
     """Gates: well-formed single-line UTF-8 text in range."""
     for check in (
@@ -156,6 +179,7 @@ def validate_structure(value):
         check_two_sentences,
         check_word_budget,
         check_terminal_period,
+        check_no_repeated_content_word,
     ):
         check(value)
 
@@ -170,6 +194,7 @@ def validate_detail(value):
 def validate_voice(value):
     """Voice: the agent's own status voice, plain and short, not a
     poem, a speech or a slogan."""
+    check_first_sentence_is_status(value)
     check_agent_voice(value)
     check_not_poem_or_slogan(value)
 
